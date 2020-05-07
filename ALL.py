@@ -168,11 +168,48 @@ def Baseline(Xtest, ytest, Xtrain, ytrain):
         
 #%%
 #Run Baseline with Spam data
-Dtrain, trainlabel = CreateD(train_texts_spam, train_labels_spam)
-Dtest, testlabel = CreateD(test_texts_spam, test_labels_spam)  
-Trainaccuspam, Testaccuspam = Baseline(Dtest, testlabel, Dtrain, trainlabel)
+Dtrain_spam, trainlabel_spam = CreateD(train_texts_spam, train_labels_spam)
+Dtest_spam, testlabel_spam = CreateD(test_texts_spam, test_labels_spam)  
+#Trainaccuspam, Testaccuspam = Baseline(Dtest, testlabel, Dtrain, trainlabel)
 
 
-Dtrain, trainlabel = CreateD(train_texts_news, train_labels_news)
-Dtest, testlabel = CreateD(test_texts_news, test_labels_news)  
-Trainaccunews, Testaccunews = Baseline(Dtest, testlabel, Dtrain, trainlabel)
+Dtrain_news, trainlabel_news = CreateD(train_texts_news, train_labels_news)
+Dtest, testlabel = CreateD(test_texts_news, test_labels_news) 
+ 
+#Trainaccunews, Testaccunews = Baseline(Dtest, testlabel, Dtrain, trainlabel)
+
+
+def Cross(K, Data, labels):
+    AllTrainAccu, AllTestAccu = [], []
+    
+    CV =  Kfold(n_splits=K, shuffle=True)
+    for trainidx, testidx in CV.split(Data):
+        
+        Xtrain = Data[trainidx,:]
+        Xtest  = Data[testidx,:]
+        ytrain = labels[trainidx]
+        ytest = labels[testidx]
+        
+        Trainaccu, Testaccu = Baseline(Xtest, ytest, Xtrain, ytrain)
+        
+        AllTrainAccu.append(Trainaccu)
+        AllTestAccu.append(Testaccu)
+    
+    return AllTrainAccu, AllTestAccu
+
+
+AllTrainAccu, AllTestAccu = Cross(10, Dtrain_spam, trainlabel_spam)
+# Prepare the x-axis
+x=np.arange(1,11)
+
+# Plot the data
+plt.plot(x, AllTrainAccu,'o-', color="Lime", label='train')
+plt.plot(x, AllTestAccu,'-o', color="DeepPink", label='test')
+
+# Make it preeeeeetty
+plt.legend()
+plt.xlabel('Number of K')       
+plt.ylabel('Accuracy')
+
+# Show the plot
+plt.show()
